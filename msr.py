@@ -6,7 +6,7 @@ import struct
 import os
 
 def writemsr(msr, val):
-    n = glob.glob('/dev/cpu/[0-9]*/msr')
+    n = glob.glob('/dev/cpu/[0-9]*/msr_safe')
     for c in n:
         f = os.open(c, os.O_WRONLY)
         os.lseek(f, msr, os.SEEK_SET)
@@ -16,14 +16,14 @@ def writemsr(msr, val):
         raise OSError("msr module not loaded (run modprobe msr)")
     
 def readmsr(msr, cpu = 0):
-    f = os.open('/dev/cpu/%d/msr' % (cpu,), os.O_RDONLY)
+    f = os.open('/dev/cpu/%d/msr_safe' % (cpu,), os.O_RDONLY)
     os.lseek(f, msr, os.SEEK_SET)
     val = struct.unpack('Q', os.read(f, 8))[0]
     os.close(f)
     return val
 
 def changebit(msr, bit, val):
-    n = glob.glob('/dev/cpu/[0-9]*/msr')
+    n = glob.glob('/dev/cpu/[0-9]*/msr_safe')
     for c in n:
         f = os.open(c, os.O_RDWR)
         os.lseek(f, msr, os.SEEK_SET)
@@ -47,7 +47,7 @@ if __name__ == '__main__':
         except ValueError:
             raise argparse.ArgumentError("Bad hex number %s" % (s))
 
-    if not os.path.exists("/dev/cpu/0/msr"):
+    if not os.path.exists("/dev/cpu/0/msr_safe"):
         os.system("/sbin/modprobe msr")
 
     p = argparse.ArgumentParser(description='Access x86 model specific registers.')
